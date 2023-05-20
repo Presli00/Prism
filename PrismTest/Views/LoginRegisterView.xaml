@@ -1,0 +1,187 @@
+﻿<UserControl x:Class="PrismTest.Views.LoginRegisterView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:PrismTest.Views"
+             xmlns:ViewModels="clr-namespace:PrismTest.ViewModels"
+             xmlns:dat="clr-namespace:System.Windows.Data;assembly=PresentationFramework"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+             d:DataContext="{d:DesignInstance Type=ViewModels:LoginRegisterViewModel}"
+             materialDesign:ThemeAssist.Theme="Inherit"
+             FontFamily="{StaticResource MaterialDesignFont}"
+             TextElement.FontSize="13"
+             TextElement.FontWeight="Regular"
+             TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+             TextOptions.TextFormattingMode="Ideal"
+             TextOptions.TextRenderingMode="Auto"
+             mc:Ignorable="d">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="b2v"/>
+        <CollectionViewSource x:Key="GenreListCVS"
+                              CollectionViewType="{x:Type dat:ListCollectionView}"
+                              Source="{Binding GenreListOC}">
+            <CollectionViewSource.SortDescriptions>
+                <scm:SortDescription PropertyName="Name"/>
+            </CollectionViewSource.SortDescriptions>
+        </CollectionViewSource>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <materialDesign:ColorZone x:Name="BannerTop"
+                                  Grid.ColumnSpan="40"
+                                  Margin="0,0,0,0"
+                                  materialDesign:ShadowAssist.ShadowDepth="Depth2"
+                                  materialDesign:ShadowAssist.ShadowEdges="Bottom"
+                                  Mode="PrimaryMid">
+            <!--  Tab Control  -->
+            <StackPanel Margin="4"
+                        VerticalAlignment="Top"
+                        Orientation="Horizontal">
+                <RadioButton Name="RegisterBtn"
+                             Margin="4"
+                             HorizontalAlignment="Center"
+                             VerticalAlignment="Center"
+                             Content="REGISTER"
+                             IsChecked="True"
+                             Style="{StaticResource MaterialDesignTabRadioButton}" />
+                <RadioButton Name="LoginBtn"
+                             Margin="4"
+                             Content="LOGIN"
+                             IsChecked="False"
+                             Style="{StaticResource MaterialDesignTabRadioButton}" />
+            </StackPanel>
+        </materialDesign:ColorZone>
+        <Grid Name="RegisterBlock"
+              VerticalAlignment="Center"
+              HorizontalAlignment="Center"
+              Grid.RowSpan="6"
+              Grid.ColumnSpan="4"
+              ScrollViewer.CanContentScroll="True"
+              Visibility="{Binding Path=IsChecked, ElementName=RegisterBtn,Converter={StaticResource b2v}}">
+            <!-- CONTENT OF THE REGISTER TAB GOES IN HERE -->
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <TextBox x:Name="Username"
+                     Grid.Row="0"
+                         Grid.ColumnSpan="3"
+                         Width="200"
+                         Height="25"
+                         Margin="10"
+                         VerticalAlignment="Top"
+                         materialDesign:HintAssist.Hint="Username*"
+                         FontSize="15"
+                         Style="{StaticResource MaterialDesignTextBox}" />
+            <TextBox x:Name="RegisterEmail"
+                     Grid.Row="1"
+                         Grid.ColumnSpan="3"
+                         Width="200"
+                         Height="25"
+                         Margin="10"
+                         VerticalAlignment="Top"
+                         materialDesign:HintAssist.Hint="Email*"
+                         FontSize="15"
+                         Style="{StaticResource MaterialDesignTextBox}" />
+            <PasswordBox x:Name="RegisterPassword"
+                     Grid.Row="2"
+                         Grid.ColumnSpan="3"
+                         Width="200"
+                         Height="25"
+                         Margin="10"
+                         VerticalAlignment="Top"
+                         materialDesign:HintAssist.Hint="Password*"
+                         FontSize="15"
+                         Style="{StaticResource MaterialDesignPasswordBox}" />
+            <PasswordBox x:Name="ConfirmPassword"
+                     Grid.Row="3"
+                         Grid.ColumnSpan="3"
+                         Width="200"
+                         Height="25"
+                         Margin="10"
+                         VerticalAlignment="Top"
+                         materialDesign:HintAssist.Hint="Confirm password*"
+                         FontSize="15"
+                         Style="{StaticResource MaterialDesignPasswordBox}" />
+            <TextBox x:Name="Region"
+                     Grid.Row="4"
+                         Grid.ColumnSpan="3"
+                         Width="200"
+                         Height="25"
+                         Margin="10"
+                         VerticalAlignment="Top"
+                         materialDesign:HintAssist.Hint="Region"
+                         FontSize="15"
+                         Style="{StaticResource MaterialDesignTextBox}" />
+            <Button Height="20"
+                    Grid.Row="5"
+                        VerticalAlignment="Top"
+                        Click="Register_OnClick"
+                        Style="{DynamicResource MaterialDesignToolButton}"
+                    Margin="5">
+                <materialDesign:PackIcon VerticalAlignment="Center"
+                                             Kind="Send"
+                                             Opacity=".56"/>
+            </Button>
+        </Grid>
+        <Grid x:Name="LoginBlock"
+              Grid.RowSpan="6"
+              Grid.ColumnSpan="4"
+              VerticalAlignment="Center"
+              HorizontalAlignment="Center"
+              ScrollViewer.CanContentScroll="True"
+              Visibility="{Binding Path=IsChecked, ElementName=LoginBtn,Converter={StaticResource b2v}}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <TextBox x:Name="LoginEmail"
+                     Grid.Row="0"
+                         Grid.ColumnSpan="3"
+                         Width="200"
+                         Height="25"
+                         Margin="10"
+                         VerticalAlignment="Top"
+                         materialDesign:HintAssist.Hint="Email"
+                         FontSize="15"
+                         Style="{StaticResource MaterialDesignTextBox}" />
+            <PasswordBox x:Name="LoginPassword"
+                     Grid.Row="1"
+                         Grid.ColumnSpan="3"
+                         Width="200"
+                         Height="25"
+                         Margin="10"
+                         VerticalAlignment="Top"
+                         materialDesign:HintAssist.Hint="Password"
+                         FontSize="15"
+                         Style="{StaticResource MaterialDesignPasswordBox}" />
+            <Button x:Name="loginButton"
+                Height="20"
+                    Grid.Row="2"
+                        VerticalAlignment="Top"
+                        Click="Login_OnClick"
+                        Style="{DynamicResource MaterialDesignToolButton}"
+                    Margin="5">
+                <materialDesign:PackIcon VerticalAlignment="Center"
+                                             Kind="Send"
+                                             Opacity=".56" />
+            </Button>
+
+        </Grid>
+        <TextBlock x:Name="errorMessage"
+                   HorizontalAlignment="Center"
+                   Margin="2,0,0,0"
+                   VerticalAlignment="Center"
+                   FontSize="17"/>
+    </Grid>
+</UserControl>
