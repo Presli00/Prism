@@ -75,14 +75,11 @@ namespace PrismTest.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("UserId1")
-                        .HasColumnType("decimal(18,2)");
-
                     b.HasKey("PurchaseId");
 
                     b.HasIndex("GameId");
 
-                    b.HasIndex("UserId1");
+                    b.HasIndex("UserId");
 
                     b.ToTable("Purchase");
 
@@ -91,8 +88,11 @@ namespace PrismTest.Migrations
 
             modelBuilder.Entity("PrismTest.Models.DataModels.User", b =>
                 {
-                    b.Property<decimal>("Id")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -126,8 +126,8 @@ namespace PrismTest.Migrations
                 {
                     b.HasBaseType("PrismTest.Models.DataModels.Purchase");
 
-                    b.Property<decimal>("PurchaseAmount")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<double>("PurchaseAmount")
+                        .HasColumnType("float");
 
                     b.HasDiscriminator().HasValue("PurchaseHistory");
                 });
@@ -142,7 +142,7 @@ namespace PrismTest.Migrations
 
                     b.HasOne("PrismTest.Models.DataModels.User", "User")
                         .WithMany("Purchases")
-                        .HasForeignKey("UserId1")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

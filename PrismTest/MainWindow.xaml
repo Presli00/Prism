@@ -47,6 +47,10 @@
                       DataType="{x:Type viewmodels:LoginRegisterViewModel}">
             <views:LoginRegisterView DataContext="{Binding}"/>
         </DataTemplate>
+        <DataTemplate x:Name="storeViewTemplate"
+                      DataType="{x:Type viewmodels:StoreViewModel}">
+            <views:StoreView DataContext="{Binding}"/>
+        </DataTemplate>
         <CollectionViewSource x:Key="GenreListCVS"
                               CollectionViewType="{x:Type dat:ListCollectionView}"
                               Source="{Binding GenreListOC}">
@@ -302,8 +306,41 @@
                                             <TextBlock Text="Settings" />
                                         </StackPanel>
                                     </Button>
+                                    <Button Click="LogOut_OnClick">
+                                        <StackPanel Orientation="Horizontal">
+                                            <materialDesign:PackIcon Margin="0,0,10,0"
+                                                                     VerticalAlignment="Center"
+                                                                     Kind="Logout"/>
+                                            <TextBlock Text="Logout"/>
+                                        </StackPanel>
+                                    </Button>
                                 </StackPanel>
                             </materialDesign:PopupBox>
+                            <StackPanel DockPanel.Dock="Right"
+                                  HorizontalAlignment="Right"
+                                  VerticalAlignment="Center"
+                                  Margin="0,0,280,0"
+                                        Orientation="Horizontal">
+                                <materialDesign:PackIcon Margin="0,0,15,0"
+                                                         VerticalAlignment="Center"
+                                                         Kind="User"
+                                                         Height="25"
+                                                         Width="25"/>
+                                <StackPanel Orientation="Vertical"
+                                        Height="auto"
+                                        Width="auto"
+                                            VerticalAlignment="Center">
+                                    <TextBlock x:Name="Username"
+                                       VerticalAlignment="Center"
+                                       FontSize="18"
+                                       RenderOptions.EdgeMode="Aliased"/>
+                                    <TextBlock x:Name="Email"
+                                       VerticalAlignment="Center"
+                                       FontSize="12"
+                                       RenderOptions.EdgeMode="Aliased"/>
+                                </StackPanel>
+                            </StackPanel>
+
                         </DockPanel>
                     </materialDesign:ColorZone>
                     <ContentControl x:Name="ContentControl"

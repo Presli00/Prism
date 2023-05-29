@@ -8,11 +8,15 @@ using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
+using PrismTest.Models.DataModels;
 
 namespace PrismTest
 {
     public partial class AddGames : Page
     {
+        private readonly ModelContext context = new ModelContext();
+        private MainWindow mainWindow = ((MainWindow)Application.Current.MainWindow);
+
         private LoadAllGames lag = new LoadAllGames();
         public string alltitles;
         public int offset = 0;
@@ -45,9 +49,9 @@ namespace PrismTest
                     Uri uri = uriBuilder.Uri;
                     NewGameLink.Text = uri.ToString();
                 }
-                if (System.IO.File.Exists("./Resources/GamesList.txt"))
+                if (System.IO.File.Exists($"./Resources/{mainWindow.Email.Text}GamesList.txt"))
                 {
-                    string[] allgames = System.IO.File.ReadAllLines("./Resources/GamesList.txt");
+                    string[] allgames = System.IO.File.ReadAllLines($"./Resources/{mainWindow.Email.Text}GamesList.txt");
                     string[] columns = new string[0];
                     int numofgames = 0;
                     foreach (var item in allgames)
@@ -68,7 +72,7 @@ namespace PrismTest
                     {
                         try
                         {
-                            TextWriter tsw = new StreamWriter(@"./Resources/GamesList.txt", true);
+                            TextWriter tsw = new StreamWriter($@"./Resources/{mainWindow.Email.Text}GamesList.txt", true);
                             Guid gameGuid = Guid.NewGuid();
                             tsw.WriteLine(NewGameTitle.Text + "|" +
                                           NewGameGenre.Text + "|" +
@@ -97,7 +101,7 @@ namespace PrismTest
                 {
                     try
                     {
-                        TextWriter tsw = new StreamWriter(@"./Resources/GamesList.txt", true);
+                        TextWriter tsw = new StreamWriter($@"./Resources/{mainWindow.Email.Text}GamesList.txt", true);
                         Guid gameGuid = Guid.NewGuid();
                         tsw.WriteLine(NewGameTitle.Text + "|" +
                                       NewGameGenre.Text + "|" +

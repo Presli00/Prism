@@ -17,9 +17,9 @@ namespace PrismTest.ViewModels
             ls.Search(gametitle, imagetype, searchstring, offset);
             SearchList = ls.SearchList;
         }
-        public void LoadGames()
+        public void LoadGames(string email)
         {
-            lag.LoadGames();
+            lag.LoadGames(email);
             CategoryViewOC = lag.Games;
         }
 

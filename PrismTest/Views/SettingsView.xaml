@@ -69,6 +69,11 @@
                              Content="LIBRARY"
                              IsChecked="False"
                              Style="{StaticResource MaterialDesignTabRadioButton}" />
+                <RadioButton Name="ProfileSettingsBtn"
+                             Margin="4"
+                             Content="PROFILE_SETTINGS"
+                             IsChecked="False"
+                             Style="{StaticResource MaterialDesignTabRadioButton}"/>
             </StackPanel>
         </materialDesign:ColorZone>
         <Grid Name="ThemeBlock"
@@ -822,6 +827,82 @@
 
                 </StackPanel>
             </materialDesign:DialogHost>
+        </Grid>
+        <Grid Name="ProfileSettings"
+              VerticalAlignment="Center"
+              HorizontalAlignment="Center"
+              Grid.RowSpan="6"
+              Grid.ColumnSpan="4"
+              ScrollViewer.CanContentScroll="True"
+              Visibility="{Binding Path=IsChecked, ElementName=ProfileSettingsBtn,Converter={StaticResource b2v}}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <TextBlock x:Name="errorMessage"
+                   HorizontalAlignment="Center"
+                       Grid.Row="0"
+                   Margin="2,0,0,0"
+                   VerticalAlignment="Top"
+                   FontSize="17"
+                       Style="{StaticResource MaterialDesignDisplay1TextBlock}"/>
+            <PasswordBox x:Name="oldPassword"
+                       Grid.Row="1"
+                       Grid.ColumnSpan="3"
+                       Width="200"
+                       Height="25"
+                       Margin="10"
+                       VerticalAlignment="Top"
+                       materialDesign:HintAssist.Hint="Current password*"
+                       FontSize="15"
+                       Style="{StaticResource MaterialDesignPasswordBox}"/>
+            <TextBox x:Name="Username"
+                     Grid.Row="2"
+                     Grid.ColumnSpan="3"
+                     Width="200"
+                     Height="25"
+                     Margin="10"
+                     VerticalAlignment="Top"
+                     materialDesign:HintAssist.Hint="New username"
+                     FontSize="15"
+                     Style="{StaticResource MaterialDesignTextBox}" 
+                     TextChanged="usernameChangedEventHandler"/>
+            <PasswordBox x:Name="newPassword"
+                       Grid.Row="3"
+                       Grid.ColumnSpan="3"
+                       Width="200"
+                       Height="25"
+                       Margin="10"
+                       VerticalAlignment="Top"
+                       materialDesign:HintAssist.Hint="New password"
+                       FontSize="15"
+                       Style="{StaticResource MaterialDesignPasswordBox}"
+                       PasswordChanged="passwordChangedEventHandler"/>
+            <PasswordBox x:Name="confNewPassword"
+                       Grid.Row="4"
+                       Grid.ColumnSpan="3"
+                       Width="200"
+                       Height="25"
+                       Margin="10"
+                       VerticalAlignment="Top"
+                       materialDesign:HintAssist.Hint="Confirm new password"
+                       FontSize="15"
+                       Visibility="Hidden"
+                       Style="{StaticResource MaterialDesignPasswordBox}"/>
+            <Button Height="20"
+                    Grid.Row="5"
+                    VerticalAlignment="Top"
+                    Click="ChangeProfile_OnClick"
+                    Style="{DynamicResource MaterialDesignToolButton}"
+                    Margin="5">
+                <materialDesign:PackIcon VerticalAlignment="Center"
+                                         Kind="Send"
+                                         Opacity=".56"/>
+            </Button>
         </Grid>
     </Grid>
 </UserControl>

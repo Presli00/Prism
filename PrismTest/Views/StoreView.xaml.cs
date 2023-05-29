@@ -1,8 +1,10 @@
 ﻿using PrismTest.Models;
+using PrismTest.Models.DataModels;
 using PrismTest.Properties;
 using PrismTest.ViewModels;
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -18,13 +20,14 @@ namespace PrismTest.Views
     /// </summary>
     public partial class StoreView : UserControl
     {
+        private readonly ModelContext context = new ModelContext();
         DateTime dt;
         DispatcherTimer t;
         public DoubleAnimation doubleAnimation = new DoubleAnimation();
         public static string FilterGenreName;
-        public string installPath = AppDomain.CurrentDomain.BaseDirectory;
         private MainWindow MainWindow = ((MainWindow)Application.Current.MainWindow);
-        public CollectionViewSource GameListCVS;
+        public CollectionViewSource StoreListCVS;
+
         public StoreView()
         {
             InitializeComponent();
@@ -42,11 +45,12 @@ namespace PrismTest.Views
         private void Marquee_Stop(object sender, MouseEventArgs e)
         {
             t.IsEnabled = false;
-            if (gameListView.Items.Count != 0)
+
+            if (storeListView.Items.Count != 0)
             {
-                for (int i = 0; i < gameListView.Items.Count; i++)
+                foreach (var item in storeListView.Items)
                 {
-                    ContentPresenter c = (ContentPresenter)gameListView.ItemContainerGenerator.ContainerFromItem(gameListView.Items[i]);
+                    ContentPresenter c = (ContentPresenter)storeListView.ItemContainerGenerator.ContainerFromItem(item);
                     TextBlock title = c.ContentTemplate.FindName("StoreGameTitle", c) as TextBlock;
                     Canvas canvas = c.ContentTemplate.FindName("canvasTitle", c) as Canvas;
                     MaterialDesignThemes.Wpf.Card card = c.ContentTemplate.FindName("gameCard", c) as MaterialDesignThemes.Wpf.Card;
@@ -64,12 +68,11 @@ namespace PrismTest.Views
         {
             if ((DateTime.Now - dt).Seconds >= 2)
             {
-
-                if (gameListView.Items.Count != 0)
+                if (storeListView.Items.Count != 0)
                 {
-                    for (int i = 0; i < gameListView.Items.Count; i++)
+                    foreach (var item in storeListView.Items)
                     {
-                        ContentPresenter c = (ContentPresenter)gameListView.ItemContainerGenerator.ContainerFromItem(gameListView.Items[i]);
+                        ContentPresenter c = (ContentPresenter)storeListView.ItemContainerGenerator.ContainerFromItem(item);
                         TextBlock title = c.ContentTemplate.FindName("StoreGameTitle", c) as TextBlock;
                         Canvas canvas = c.ContentTemplate.FindName("canvasTitle", c) as Canvas;
                         MaterialDesignThemes.Wpf.Card card = c.ContentTemplate.FindName("gameCard", c) as MaterialDesignThemes.Wpf.Card;
@@ -88,19 +91,16 @@ namespace PrismTest.Views
                 }
             }
         }
-        private void OpenDescription_OnClick(object sender, RoutedEventArgs e)
-        {
-            ModifyFile.EditGameInfile(((Button)sender).Tag);
-        }
 
         private void UpdateColours(object sender, RoutedEventArgs e)
         {
             var converter = new BrushConverter();
-            if (gameListView.Items.Count != 0)
+
+            if (context.Games.Count() != 0)
             {
-                for (int i = 0; i < gameListView.Items.Count; i++)
+                foreach (var item in context.Games)
                 {
-                    ContentPresenter c = (ContentPresenter)gameListView.ItemContainerGenerator.ContainerFromItem(gameListView.Items[i]);
+                    ContentPresenter c = (ContentPresenter)storeListView.ItemContainerGenerator.ContainerFromItem(item);
                     try
                     {
                         Button tb = c.ContentTemplate.FindName("GameTitleBtn", c) as Button;
@@ -139,8 +139,8 @@ namespace PrismTest.Views
 
         private void EnableFilteringCheat(object sender, RoutedEventArgs e)
         {
-            GameListCVS = ((CollectionViewSource)(FindResource("GameListCVS")));
-            MainWindow.cvs = GameListCVS;
+            StoreListCVS = ((CollectionViewSource)(FindResource("StoreListCVS")));
+            MainWindow.cvs = StoreListCVS;
             MainWindow.MenuToggleButton.IsChecked = true;
         }
 
@@ -163,22 +163,43 @@ namespace PrismTest.Views
 
         private void RefreshList()
         {
-            GameListCVS = ((CollectionViewSource)(FindResource("GameListCVS")));
-            MainWindow.cvs = GameListCVS;
+            StoreListCVS = ((CollectionViewSource)(FindResource("StoreListCVS")));
+            MainWindow.cvs = StoreListCVS;
 
             if (FilterGenreName != null)
             {
-                GameListCVS.Filter += new FilterEventHandler(GenreFilter);
+                StoreListCVS.Filter += new FilterEventHandler(GenreFilter);
             }
 
             if (GameSearchBar.Text != null)
             {
-                GameListCVS.Filter += new FilterEventHandler(GameSearch);
+                StoreListCVS.Filter += new FilterEventHandler(GameSearch);
             }
 
-            if (GameListCVS.View != null)
+            if (StoreListCVS.View != null)
             {
-                GameListCVS.View.Refresh();
+                StoreListCVS.View.Refresh();
+            }
+        }
+        public void GenreToFilter(string filtergenrename)
+        {
+            FilterGenreName = filtergenrename;
+        }
+        public void RefreshList2(CollectionViewSource cvscvs)
+        {
+            if (cvscvs != null)
+            {
+                StoreListCVS = cvscvs;
+                if (FilterGenreName != null || FilterGenreName != "")
+                {
+                    StoreListCVS.Filter += new FilterEventHandler(GenreFilter);
+                }
+                if (GameSearchBar.Text != null)
+                {
+                    StoreListCVS.Filter += new FilterEventHandler(GameSearch);
+                }
+                if (StoreListCVS.View != null)
+                    StoreListCVS.View.Refresh();
             }
         }
     }

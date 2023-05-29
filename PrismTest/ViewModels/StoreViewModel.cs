@@ -9,7 +9,8 @@ namespace PrismTest.ViewModels
 {
     internal class StoreViewModel
     {
-        public static ObservableCollection<GameList> PosterViewOC { get; set; }
+        public static ObservableCollection<GameList> StoreViewOC { get; set; }
+        public static ObservableCollection<GenreList> GenreListOC { get; set; }
         private LoadSearch ls = new LoadSearch();
         public static ObservableCollection<SearchResults> SearchList { get; set; }
 
@@ -20,7 +21,8 @@ namespace PrismTest.ViewModels
         }
         public void LoadGames()
         {
-            PosterViewOC = MainWindow.GameListMW;
+            StoreViewOC = MainWindow.StoreListMW;
+            GenreListOC = MainWindow.GenreListMW;
         }
     }
 }

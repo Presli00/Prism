@@ -1,4 +1,5 @@
 using PrismTest.Models;
+using PrismTest.Models.DataModels;
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -12,6 +13,10 @@ namespace PrismTest.ViewModels
 {
     public class LoadAllGames
     {
+        public ObservableCollection<GameList> StoreGames
+        {
+            get; set;
+        }
         public ObservableCollection<GameList> Games
         {
             get; set;
@@ -20,9 +25,10 @@ namespace PrismTest.ViewModels
         {
             get; set;
         }
+        private ObservableCollection<GameList> storeGames = new ObservableCollection<GameList>();
         private ObservableCollection<GameList> games = new ObservableCollection<GameList>();
         private ObservableCollection<GenreList> genres = new ObservableCollection<GenreList>();
-        private MainWindow MainWindow = ((MainWindow)Application.Current.MainWindow);
+        private readonly ModelContext context = new ModelContext();
         public BitmapImage icon;
         public BitmapImage poster;
         public BitmapImage banner;
@@ -34,8 +40,32 @@ namespace PrismTest.ViewModels
         public string genreName;
         public string genreGuid;
         public int percentage;
+        public BitmapImage storePoster;
+        public string storeTitle;
+        public string storePath;
+        public string storeGenre;
+        public string storeLink;
+        public string storeGuid;
 
-        public void LoadGames()
+        public void LoadStoreGames()
+        {
+            try
+            {
+                storeGames.Clear();
+            }
+            catch { }
+            try
+            {
+                StoreGames.Clear();
+            }
+            catch { }
+            LoadStoreList();
+            StoreGames = storeGames;
+            Application.Current.Dispatcher.Invoke(new Action(() =>
+            ((MainWindow)Application.Current.MainWindow).RefreshDataContext()));
+        }
+
+        public void LoadGames(string email)
         {
             try
             {
@@ -47,7 +77,7 @@ namespace PrismTest.ViewModels
                 Games.Clear();
             }
             catch { }
-            ReadFile();
+            ReadFile(email);
             Games = games;
             Application.Current.Dispatcher.Invoke(new Action(() =>
             ((MainWindow)Application.Current.MainWindow).RefreshDataContext()));
@@ -86,11 +116,56 @@ namespace PrismTest.ViewModels
             Genres = genres;
         }
 
-        public void ReadFile()
+        public void LoadStoreList()
         {
-            if (File.Exists("./Resources/GamesList.txt"))
+            if (File.Exists($"./Resources/StoreList.txt"))
             {
-                string gameFile = "./Resources/GamesList.txt";
+                string gameFile = $"./Resources/StoreList.txt";
+                string[] columns = new string[0];
+                int itemcount = 0;
+                int GameCount = File.ReadLines(gameFile).Count();
+                foreach (var item in File.ReadAllLines(gameFile))
+                {
+                    columns = item.Split('|');
+                    if (columns[5] != "")
+                    {
+                        try
+                        {
+                            string installDir = AppDomain.CurrentDomain.BaseDirectory;
+                            string posterpath = installDir + "Resources/img/" + columns[5];
+                            storePoster = new BitmapImage();
+                            storePoster.BeginInit();
+                            storePoster.UriSource = new Uri(posterpath);
+                            storePoster.DecodePixelWidth = 200;
+                            storePoster.CacheOption = BitmapCacheOption.OnLoad;
+                            storePoster.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                            storePoster.EndInit();
+                            storePoster.Freeze();
+                        }
+                        catch (Exception e) { Trace.WriteLine("Error saving image (Poster): " + e); }
+                    }
+                    itemcount++;
+                    storeTitle = columns[0];
+                    storeGenre = columns[1];
+                    storePath = columns[2];
+                    storeLink = columns[3];
+                    storeGuid = columns[7];
+                    double percent = itemcount / GameCount;
+                    percentage = Convert.ToInt32(percent);
+                    Application.Current.Dispatcher.Invoke(new Action(() =>
+                    AddStoreGameToOC()));
+                    icon = null;
+                    storePoster = null;
+                    banner = null;
+                }
+            }
+        }
+
+        public void ReadFile(string email)
+        {
+            if (File.Exists($"./Resources/{email}GamesList.txt"))
+            {
+                string gameFile = $"./Resources/{email}GamesList.txt";
                 string[] columns = new string[0];
                 int itemcount = 0;
                 int GameCount = File.ReadLines(gameFile).Count();
@@ -177,6 +252,19 @@ namespace PrismTest.ViewModels
                 Poster = poster,
                 Banner = banner,
                 Guid = guid
+            });
+        }
+        public void AddStoreGameToOC()
+        {
+            string threadState = Thread.CurrentThread.IsBackground.ToString();
+            storeGames.Add(new GameList
+            {
+                Title = storeTitle,
+                Genre = storeGenre,
+                Path = storePath,
+                Link = storeLink,
+                Poster = storePoster,
+                Guid = storeGuid
             });
         }
         public void AddGenresToOC()

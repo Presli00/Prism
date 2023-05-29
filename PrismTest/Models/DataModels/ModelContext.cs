@@ -21,6 +21,7 @@ namespace PrismTest.Models.DataModels
 
         }
 
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseSqlServer("server=localhost\\sqlexpress;database=PrismDatabase;trusted_connection=true");

@@ -182,6 +182,7 @@
                    HorizontalAlignment="Center"
                    Margin="2,0,0,0"
                    VerticalAlignment="Center"
-                   FontSize="17"/>
+                   FontSize="17"
+                   Style="{StaticResource MaterialDesignDisplay1TextBlock}"/>
     </Grid>
 </UserControl>

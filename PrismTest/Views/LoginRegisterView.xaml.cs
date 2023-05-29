@@ -1,22 +1,24 @@
 ﻿using System;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using PrismTest.Models.DataModels;
+using PrismTest.ViewModels;
+using PrismTest.Helpers;
+using Microsoft.EntityFrameworkCore;
 
 namespace PrismTest.Views
 {
     public partial class LoginRegisterView : UserControl
     {
-        private const int keySize = 64;
-        private const int iterations = 350000;
-        HashAlgorithmName hashAlgorithm = HashAlgorithmName.SHA512;
+        //private const int keySize = 64;
+        //private const int iterations = 350000;
+        //HashAlgorithmName hashAlgorithm = HashAlgorithmName.SHA512;
 
         private readonly ModelContext context = new ModelContext();
         private MainWindow mainWindow = ((MainWindow)Application.Current.MainWindow);
+        private PasswordsEncryption encryptor = new PasswordsEncryption();
 
         public LoginRegisterView()
         {
@@ -39,6 +41,10 @@ namespace PrismTest.Views
             {
                 errorMessage.Text = "Plese enter a valid username.";
             }
+            else if (this.context.Users.Any(x => x.Username == username))
+            {
+                errorMessage.Text = "A user with this username already exists";
+            }
             else if (string.IsNullOrEmpty(email))
             {
                 errorMessage.Text = "Please enter an email.";
@@ -46,6 +52,10 @@ namespace PrismTest.Views
             else if (!Regex.IsMatch(email, @"^[a-zA-Z][\w\.-]*[a-zA-Z0-9]@[a-zA-Z0-9][\w\.-]*[a-zA-Z0-9]\.[a-zA-Z][a-zA-Z\.]*[a-zA-Z]$"))
             {
                 errorMessage.Text = "Plese enter a valid email.";
+            }
+            else if (this.context.Users.Any(x => x.Email == email))
+            {
+                errorMessage.Text = "A user with this email already exists";
             }
             else if (string.IsNullOrEmpty(password))
             {
@@ -74,7 +84,7 @@ namespace PrismTest.Views
                 this.context.Users.Add(new User
                 {
                     Username = username,
-                    Password = HashPassword(password, out var salt),
+                    Password = encryptor.HashPassword(password, out var salt),
                     Email = email,
                     Salt = Convert.ToHexString(salt),
                     Region = region,
@@ -84,22 +94,16 @@ namespace PrismTest.Views
 
                 this.context.SaveChanges();
 
-                context.Dispose();
+                mainWindow.AddGameButton.Visibility = Visibility.Visible;
+                mainWindow.Menu.Visibility = Visibility.Visible;
+                mainWindow.ContentControl.Margin = new Thickness(0, 64, 0, 0);
                 mainWindow.LoadAllViews();
+                mainWindow.Username.Text = username;
+                mainWindow.Email.Text = email;
+                LoadAllGames lag = new LoadAllGames();
+                lag.LoadGames(email);
+                context.Dispose();
             }
-        }
-
-        private string HashPassword(string password, out byte[] salt)
-        {
-            salt = RandomNumberGenerator.GetBytes(keySize);
-
-            var hash = Rfc2898DeriveBytes.Pbkdf2(
-                Encoding.UTF8.GetBytes(password),
-                salt,
-                iterations,
-                hashAlgorithm,
-                keySize);
-            return Convert.ToHexString(hash);
         }
 
         private void Login_OnClick(object sender, RoutedEventArgs e)
@@ -113,17 +117,19 @@ namespace PrismTest.Views
 
                 if (user != null)
                 {
-                    if (!VerifyPassowrd(password, user.Password, Convert.FromHexString(user.Salt)))
+                    if (!encryptor.VerifyPassowrd(password, user.Password, Convert.FromHexString(user.Salt)))
                     {
                         errorMessage.Text = "The password is wrong.";
                     }
                     else
                     {
-                        context.Dispose();
                         mainWindow.AddGameButton.Visibility = Visibility.Visible;
                         mainWindow.Menu.Visibility = Visibility.Visible;
                         mainWindow.ContentControl.Margin = new Thickness(0, 64, 0, 0);
+                        mainWindow.Username.Text = user.Username;
+                        mainWindow.Email.Text = user.Email;
                         mainWindow.LoadAllViews();
+                        context.Dispose();
                     }
                 }
                 else
@@ -135,13 +141,6 @@ namespace PrismTest.Views
             {
                 errorMessage.Text = "Please enter a username or password.";
             }
-        }
-
-        private bool VerifyPassowrd(string password, string hash, byte[] salt)
-        {
-            var hashToCompare = Rfc2898DeriveBytes.Pbkdf2(Encoding.UTF8.GetBytes(password), salt, iterations, hashAlgorithm, keySize);
-
-            return CryptographicOperations.FixedTimeEquals(hashToCompare, Convert.FromHexString(hash));
         }
     }
 }

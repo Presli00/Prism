@@ -28,6 +28,10 @@ namespace PrismTest
         public static AddGames DialogAddGames = new AddGames();
         public static EditGames DialogEditGames = new EditGames();
         public static ExeSelection DialogExeSelection = new ExeSelection();
+        public static ObservableCollection<GameList> StoreListMW
+        {
+            get; set;
+        }
         public static ObservableCollection<GameList> GameListMW
         {
             get; set;
@@ -40,12 +44,15 @@ namespace PrismTest
         private BannerViewModel bannerViewModel = new BannerViewModel();
         private ListViewModel listViewModel = new ListViewModel();
         private PosterViewModel posterViewModel = new PosterViewModel();
+        private StoreViewModel storeViewModel = new StoreViewModel();
         private SettingsViewModel settingsViewModel = new SettingsViewModel();
+        private LoginRegisterViewModel loginRegisterViewModel = new LoginRegisterViewModel();
         private ExesViewModel exesViewModel = new ExesViewModel();
         private Loading loadingdialog = new Loading();
         public Loading loadingprogressdialog = new Loading();
         public PosterView pv = new PosterView();
         public BannerView bv = new BannerView();
+        public StoreView sv = new StoreView();
         public Views.ListView lv = new Views.ListView();
         public CollectionViewSource cvs;
         public bool isDialogOpen;
@@ -77,19 +84,20 @@ namespace PrismTest
             {
                 WorkerReportsProgress = true
             };
-            lagbw.ProgressChanged += LagBWProgressChanged;
-            lagbw.DoWork += LagBWDoWork;
-            lagbw.RunWorkerCompleted += LagBWRunWorkerCompleted;
+            InitializeComponent();
             Trace.Listeners.Clear();
             CheckLaunchersExist();
             FixFilePaths();
             InitTraceListen();
             this.Height = (SystemParameters.PrimaryScreenHeight * 0.75);
             this.Width = (SystemParameters.PrimaryScreenWidth * 0.75);
+            lagbw.ProgressChanged += LagBWProgressChanged;
+            lagbw.DoWork += LagBWDoWork;
+            lagbw.RunWorkerCompleted += LagBWRunWorkerCompleted;
             LoadAllGames lag = new LoadAllGames();
             LoadSearch ls = new LoadSearch();
             lag.LoadGenres();
-            InitializeComponent();
+            lag.LoadStoreGames();
             ManageLauncherIconVisibility();
             //LoadAllViews();
             DataContext = null;
@@ -301,7 +309,12 @@ namespace PrismTest
         public void LagBWDoWork(object sender, DoWorkEventArgs e)
         {
             lag.LoadGenres();
-            lag.LoadGames();
+            lag.LoadStoreGames();
+            this.Dispatcher.Invoke(() =>
+            {
+                lag.LoadGames(Email.Text);
+            });
+
         }
         public void LagBWProgressChanged(object sender, ProgressChangedEventArgs e)
         {
@@ -311,9 +324,11 @@ namespace PrismTest
         {
             GameListMW = lag.Games;
             GenreListMW = lag.Genres;
+            StoreListMW = lag.StoreGames;
             posterViewModel.LoadGames();
             listViewModel.LoadGames();
             bannerViewModel.LoadGames();
+            storeViewModel.LoadGames();
             if (Settings.Default.viewtype.ToString() == "Poster")
             {
                 PosterViewActive();
@@ -325,6 +340,10 @@ namespace PrismTest
             if (Settings.Default.viewtype.ToString() == "List")
             {
                 ListViewActive();
+            }
+            if (Settings.Default.viewtype.ToString() == "Store")
+            {
+                StoreViewActive();
             }
             DialogFrame.Visibility = Visibility.Hidden;
         }
@@ -357,6 +376,7 @@ namespace PrismTest
                 try
                 {
                     GameListMW.Clear();
+                    StoreListMW.Clear();
                 }
                 catch { }
                 lagbw.RunWorkerAsync();
@@ -671,6 +691,10 @@ namespace PrismTest
                 {
                     DataContext = listViewModel;
                 }
+                if (Settings.Default.viewtype == "Store")
+                {
+                    DataContext = storeViewModel;
+                }
             }
             pv.GenreToFilter(genreToFilter);
             pv.RefreshList2(cvs);
@@ -678,6 +702,8 @@ namespace PrismTest
             bv.RefreshList2(cvs);
             lv.GenreToFilter(genreToFilter);
             lv.RefreshList2(cvs);
+            sv.GenreToFilter(genreToFilter);
+            sv.RefreshList2(cvs);
             MenuToggleButton.IsChecked = false;
         }
         public void PosterViewActive()
@@ -711,8 +737,8 @@ namespace PrismTest
         public void StoreViewActive()
         {
             view = "store";
-            DataContext = posterViewModel;
-            Settings.Default.viewtype = "Poster";
+            DataContext = storeViewModel;
+            Settings.Default.viewtype = "Store";
             Settings.Default.Save();
         }
         public void IncreaseExeSearch()
@@ -722,20 +748,20 @@ namespace PrismTest
 
         public void FixFilePaths()
         {
-            if (File.Exists("./Resources/GamesList.txt"))
+            if (File.Exists($"./Resources/{Email}GamesList.txt"))
             {
-                string file = "./Resources/GamesList.txt";
-                string fileout = "./Resources/GamesList2.txt";
+                string file = $"./Resources/{Email}GamesList.txt";
+                string fileout = $"./Resources/{Email}GamesList2.txt";
                 var contents = File.ReadAllLines(file);
                 Array.Sort(contents);
                 File.WriteAllLines(fileout, contents);
-                File.Delete("./Resources/GamesList.txt");
-                File.Move("./Resources/GamesList2.txt", "./Resources/GamesList.txt");
+                File.Delete($"./Resources/{Email}GamesList.txt");
+                File.Move($"./Resources/{Email}GamesList2.txt", $"./Resources/{Email}GamesList.txt");
                 bool textModified = false;
                 string installPath = AppDomain.CurrentDomain.BaseDirectory;
-                if (File.Exists("./Resources/GamesList.txt"))
+                if (File.Exists($"./Resources/{Email}GamesList.txt"))
                 {
-                    string text = File.ReadAllText("./Resources/GamesList.txt");
+                    string text = File.ReadAllText($"./Resources/{Email}GamesList.txt");
 
                     if (text.Contains(installPath + "Resources/img/"))
                     {
@@ -779,9 +805,9 @@ namespace PrismTest
                     }
                     if (newText != null)
                     {
-                        File.WriteAllText("./Resources/GamesList2.txt", newText);
-                        File.Delete("./Resources/GamesList.txt");
-                        File.Move("./Resources/GamesList2.txt", "./Resources/GamesList.txt");
+                        File.WriteAllText($"./Resources/{Email}GamesList2.txt", newText);
+                        File.Delete($"./Resources/{Email}GamesList.txt");
+                        File.Move($"./Resources/{Email}GamesList2.txt", $"./Resources/{Email}GamesList.txt");
                     }
                 }
             }
@@ -845,6 +871,14 @@ namespace PrismTest
         {
             Trace.WriteLine(DateTime.Now + ": Settings View Active");
             SettingsViewActive();
+        }
+        private void LogOut_OnClick(object sender, RoutedEventArgs e)
+        {
+            this.DataContext = loginRegisterViewModel;
+            this.AddGameButton.Visibility = Visibility.Hidden;
+            this.Menu.Visibility = Visibility.Collapsed;
+            this.ContentControl.Margin = new Thickness(0);
+            this.Show();
         }
         private void StoreButton_OnClick(object sender, RoutedEventArgs e)
         {

@@ -15,6 +15,9 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
+using PrismTest.Models.DataModels;
+using PrismTest.Helpers;
+using System.Linq;
 
 namespace PrismTest.Views
 {
@@ -25,6 +28,9 @@ namespace PrismTest.Views
         private MainWindow MainWindow = ((MainWindow)Application.Current.MainWindow);
         private LoadAllGames lag = new LoadAllGames();
         public string DeletedGenre;
+        private readonly ModelContext context = new ModelContext();
+        private PasswordsEncryption encryptor = new PasswordsEncryption();
+        private LoginRegisterViewModel loginRegisterViewModel = new LoginRegisterViewModel();
 
         public void SearchForGames(object sender, RoutedEventArgs e)
         {
@@ -387,6 +393,109 @@ namespace PrismTest.Views
             ModifyFile.RemoveGenreFromFile(((Button)sender).Tag.ToString());
             MainWindow.RefreshGames();
         }
+        private void usernameChangedEventHandler(object sender, TextChangedEventArgs args)
+        {
+            newPassword.Visibility = Visibility.Hidden;
+            if (Username.Text == "")
+            {
+                newPassword.Visibility = Visibility.Visible;
+            }
+        }
+
+        private void passwordChangedEventHandler(object sender, RoutedEventArgs args)
+        {
+            Username.Visibility = Visibility.Hidden;
+            confNewPassword.Visibility = Visibility.Visible;
+            if (newPassword.Password == "")
+            {
+                Username.Visibility = Visibility.Visible;
+                confNewPassword.Visibility = Visibility.Hidden;
+            }
+        }
+
+        private void ChangeProfile_OnClick(object sender, RoutedEventArgs e)
+        {
+            string currentPassword = oldPassword.Password;
+            string username = Username.Text;
+            string newPass = newPassword.Password;
+            string confPass = confNewPassword.Password;
+            bool flag = false;
+
+            if (string.IsNullOrEmpty(currentPassword))
+            {
+                errorMessage.Text = "Please enter the current password.";
+            }
+            else
+            {
+                var user = this.context.Users.FirstOrDefault(x => x.Email == MainWindow.Email.Text);
+
+                if (encryptor.VerifyPassowrd(currentPassword, user.Password, Convert.FromHexString(user.Salt)))
+                {
+                    if (username != "")
+                    {
+                        if (this.context.Users.Any(x => x.Username == username))
+                        {
+                            errorMessage.Text = "A user with this username already exists";
+                        }
+                        else if (Regex.IsMatch(username, @"^(?=.{8,20}$)(?![_.])(?!.*[_.]{2})[a-zA-Z0-9._]+(?<![_.])$"))
+                        {
+                            user.Username = username;
+                            flag = true;
+                        }
+                        else
+                        {
+                            errorMessage.Text = "Please enter a valid username.";
+                        }
+                    }
+                    else if (newPass != "")
+                    {
+                        if (string.IsNullOrEmpty(confPass))
+                        {
+                            errorMessage.Text = "Plese confirm password.";
+                        }
+                        else if (confPass != newPass)
+                        {
+                            errorMessage.Text = "You must enter the same password";
+                        }
+                        else if (Regex.IsMatch(newPass, @"^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$"))
+                        {
+                            user.Password = encryptor.HashPassword(newPass, out var salt);
+                            user.Salt = Convert.ToHexString(salt);
+                            flag = true;
+                        }
+                        else
+                        {
+                            errorMessage.Text = "Plese enter a valid password. Password must contain:" +
+                                "\n At least one upper case English letter" +
+                                "\n At least one lower case English letter" +
+                                "\n At least one digit" +
+                                "\n At least one special character" +
+                                "\n Minimum eight in length";
+                        }
+                    }
+
+                    if (flag)
+                    {
+                        this.context.SaveChanges();
+                        context.Dispose();
+                        this.Logout();
+                    }
+                }
+                else
+                {
+                    errorMessage.Text = "Wrond password!";
+                }
+            }
+        }
+        private void Logout()
+        {
+            MainWindow.DataContext = loginRegisterViewModel;
+            MainWindow.AddGameButton.Visibility = Visibility.Hidden;
+            MainWindow.Menu.Visibility = Visibility.Collapsed;
+            MainWindow.ContentControl.Margin = new Thickness(0);
+            MainWindow.Show();
+        }
+
         public void BackupLibrary(object sender, RoutedEventArgs e)
         {
             Trace.WriteLine(DateTime.Now + ": Created backup file");

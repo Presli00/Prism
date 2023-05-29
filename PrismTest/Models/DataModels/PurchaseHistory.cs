@@ -8,6 +8,6 @@ namespace PrismTest.Models.DataModels
 {
     public class PurchaseHistory : Purchase
     {
-        public decimal PurchaseAmount { get; set; }
+        public double PurchaseAmount { get; set; }
     }
 }

@@ -9,7 +9,7 @@ namespace PrismTest.Models.DataModels
 {
     public class User
     {
-        public decimal Id { get; set; }
+        public int Id { get; set; }
         public string Username { get; set; }
         [DataType(DataType.Password)]
         public string Password { get; set; }

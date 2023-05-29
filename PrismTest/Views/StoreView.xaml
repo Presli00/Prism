@@ -2,8 +2,7 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:PrismTest.Views"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:Helpers="clr-namespace:PrismTest.Models"
              xmlns:ViewModels="clr-namespace:PrismTest.ViewModels"
              xmlns:dat="clr-namespace:System.Windows.Data;assembly=PresentationFramework"
@@ -11,13 +10,22 @@
              xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
              xmlns:vwp="clr-namespace:WpfToolkit.Controls;assembly=VirtualizingWrapPanel"
              d:DataContext="{d:DesignInstance Type=ViewModels:StoreViewModel}"
+             d:DesignHeight="300"
+             d:DesignWidth="300"
              mc:Ignorable="d">
     <UserControl.Resources>
-        <CollectionViewSource x:Key="GameListCVS"
+        <CollectionViewSource x:Key="StoreListCVS"
                               CollectionViewType="{x:Type dat:ListCollectionView}"
-                              Source="{Binding PosterViewOC}">
+                              Source="{Binding StoreViewOC}">
             <CollectionViewSource.SortDescriptions>
                 <scm:SortDescription PropertyName="Title"/>
+            </CollectionViewSource.SortDescriptions>
+        </CollectionViewSource>
+        <CollectionViewSource x:Key="GenreListCVS"
+                              CollectionViewType="{x:Type dat:ListCollectionView}"
+                              Source="{Binding GenreListOC}">
+            <CollectionViewSource.SortDescriptions>
+                <scm:SortDescription PropertyName="Name" />
             </CollectionViewSource.SortDescriptions>
         </CollectionViewSource>
     </UserControl.Resources>
@@ -73,10 +81,10 @@
             Grid.RowSpan="7"
             Grid.ColumnSpan="3"
             VerticalScrollBarVisibility="Auto">
-            <ItemsControl x:Name="gameListView"
+            <ItemsControl x:Name="storeListView"
                           MaxHeight="10000"
                           Margin="10,10,0,10"
-                          ItemsSource="{Binding Source={StaticResource GameListCVS},IsAsync=True}"
+                          ItemsSource="{Binding Source={StaticResource StoreListCVS},IsAsync=True}"
                           ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                           VirtualizingStackPanel.IsVirtualizing="True">
                 <ItemsControl.ItemsPanel>
@@ -105,12 +113,6 @@
                                            Height="220"
                                            Source="{Binding Poster}"
                                            Stretch="Fill"/>
-                                    <Button Width="180"
-                                            Height="220"
-                                            Click="OpenDescription_OnClick"
-                                            Opacity="0.1"
-                                            Style="{StaticResource MaterialDesignFlatButton}"
-                                            Tag="{Binding Path}"/>
                                     <!--  stackpanel for the button  -->
                                     <StackPanel Grid.Row="1"
                                                 Grid.RowSpan="2"
@@ -165,7 +167,7 @@
                                                     Tag="{Binding Guid}">
                                                 <StackPanel Orientation="Horizontal">
                                                     <materialDesign:PackIcon VerticalAlignment="Center"
-                                                                             Kind="Pencil" />
+                                                                             Kind="Dollar" />
                                                     <TextBlock Margin="5,0,0,0"
                                                                Text="Buy Game" />
                                                 </StackPanel>
