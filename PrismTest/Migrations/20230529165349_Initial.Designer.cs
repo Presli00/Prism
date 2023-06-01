@@ -12,8 +12,8 @@ using PrismTest.Models.DataModels;
 namespace PrismTest.Migrations
 {
     [DbContext(typeof(ModelContext))]
-    [Migration("20230528213104_initial")]
-    partial class initial
+    [Migration("20230529165349_Initial")]
+    partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -41,6 +41,14 @@ namespace PrismTest.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("GamePage")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Genre")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Poster")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 

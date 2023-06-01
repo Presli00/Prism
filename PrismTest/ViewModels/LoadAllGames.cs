@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Windows;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 
 namespace PrismTest.ViewModels
 {
@@ -42,7 +43,7 @@ namespace PrismTest.ViewModels
         public int percentage;
         public BitmapImage storePoster;
         public string storeTitle;
-        public string storePath;
+        public string gamePage;
         public string storeGenre;
         public string storeLink;
         public string storeGuid;
@@ -118,7 +119,44 @@ namespace PrismTest.ViewModels
 
         public void LoadStoreList()
         {
-            if (File.Exists($"./Resources/StoreList.txt"))
+            if (context.Games.Any())
+            {
+                var games = context.Games.ToList();
+                int itemcount = 0;
+                int GameCount = games.Count();
+                foreach (var item in games)
+                {
+                    if (item.Poster != "")
+                    {
+                        try
+                        {
+                            string installDir = AppDomain.CurrentDomain.BaseDirectory;
+                            string posterpath = installDir + "Resources/img/" + item.Poster;
+                            BitmapImage image = new BitmapImage();
+                            image.BeginInit();
+                            image.UriSource = new Uri(posterpath);
+                            image.DecodePixelWidth = 200;
+                            image.CacheOption = BitmapCacheOption.OnLoad;
+                            image.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                            image.EndInit();
+                            image.Freeze();
+                            Dispatcher.CurrentDispatcher.Invoke(() => storePoster = image);
+                        }
+                        catch (Exception e) { Trace.WriteLine("Error saving image (Poster): " + e); }
+                    }
+                    itemcount++;
+                    storeTitle = item.Title;
+                    storeGenre = item.Genre;
+                    gamePage = item.GamePage;
+                    storeLink = item.BuyLink;
+                    double percent = itemcount / GameCount;
+                    percentage = Convert.ToInt32(percent);
+                    Application.Current.Dispatcher.Invoke(new Action(() =>
+                    AddStoreGameToOC()));
+                    storePoster = null;
+                }
+            }
+            else if (File.Exists($"./Resources/StoreList.txt"))
             {
                 string gameFile = $"./Resources/StoreList.txt";
                 string[] columns = new string[0];
@@ -127,42 +165,89 @@ namespace PrismTest.ViewModels
                 foreach (var item in File.ReadAllLines(gameFile))
                 {
                     columns = item.Split('|');
-                    if (columns[5] != "")
+                    if (columns[4] != "")
                     {
                         try
                         {
                             string installDir = AppDomain.CurrentDomain.BaseDirectory;
                             string posterpath = installDir + "Resources/img/" + columns[5];
-                            storePoster = new BitmapImage();
-                            storePoster.BeginInit();
-                            storePoster.UriSource = new Uri(posterpath);
-                            storePoster.DecodePixelWidth = 200;
-                            storePoster.CacheOption = BitmapCacheOption.OnLoad;
-                            storePoster.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
-                            storePoster.EndInit();
-                            storePoster.Freeze();
+                            BitmapImage image = new BitmapImage();
+                            image.BeginInit();
+                            image.UriSource = new Uri(posterpath);
+                            image.DecodePixelWidth = 200;
+                            image.CacheOption = BitmapCacheOption.OnLoad;
+                            image.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                            image.EndInit();
+                            image.Freeze();
+                            Dispatcher.CurrentDispatcher.Invoke(() => storePoster = image);
                         }
                         catch (Exception e) { Trace.WriteLine("Error saving image (Poster): " + e); }
                     }
                     itemcount++;
                     storeTitle = columns[0];
                     storeGenre = columns[1];
-                    storePath = columns[2];
+                    gamePage = columns[2];
                     storeLink = columns[3];
-                    storeGuid = columns[7];
+                    storeGuid = columns[5];
                     double percent = itemcount / GameCount;
                     percentage = Convert.ToInt32(percent);
                     Application.Current.Dispatcher.Invoke(new Action(() =>
                     AddStoreGameToOC()));
-                    icon = null;
                     storePoster = null;
-                    banner = null;
+                }
+            }
+        }
+
+        public void PopulateDatabase(string email)
+        {
+            else if (File.Exists($"./Resources/StoreList.txt"))
+            {
+                string gameFile = $"./Resources/StoreList.txt";
+                string[] columns = new string[0];
+                int itemcount = 0;
+                int GameCount = File.ReadLines(gameFile).Count();
+                foreach (var item in File.ReadAllLines(gameFile))
+                {
+                    columns = item.Split('|');
+                    if (columns[4] != "")
+                    {
+                        try
+                        {
+                            string installDir = AppDomain.CurrentDomain.BaseDirectory;
+                            string posterpath = installDir + "Resources/img/" + columns[5];
+                            BitmapImage image = new BitmapImage();
+                            image.BeginInit();
+                            image.UriSource = new Uri(posterpath);
+                            image.DecodePixelWidth = 200;
+                            image.CacheOption = BitmapCacheOption.OnLoad;
+                            image.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                            image.EndInit();
+                            image.Freeze();
+                            Dispatcher.CurrentDispatcher.Invoke(() => storePoster = image);
+                        }
+                        catch (Exception e) { Trace.WriteLine("Error saving image (Poster): " + e); }
+                    }
+                    itemcount++;
+                    storeTitle = columns[0];
+                    storeGenre = columns[1];
+                    gamePage = columns[2];
+                    storeLink = columns[3];
+                    storeGuid = columns[5];
+                    double percent = itemcount / GameCount;
+                    percentage = Convert.ToInt32(percent);
+                    Application.Current.Dispatcher.Invoke(new Action(() =>
+                    AddStoreGameToOC()));
+                    storePoster = null;
                 }
             }
         }
 
         public void ReadFile(string email)
         {
+            //if (context.Purchase.Any(x => x.User.Email == email))
+            //{
+
+            //}
             if (File.Exists($"./Resources/{email}GamesList.txt"))
             {
                 string gameFile = $"./Resources/{email}GamesList.txt";
@@ -261,7 +346,7 @@ namespace PrismTest.ViewModels
             {
                 Title = storeTitle,
                 Genre = storeGenre,
-                Path = storePath,
+                Path = gamePage,
                 Link = storeLink,
                 Poster = storePoster,
                 Guid = storeGuid
