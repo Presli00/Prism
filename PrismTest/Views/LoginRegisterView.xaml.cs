@@ -100,6 +100,7 @@ namespace PrismTest.Views
                 mainWindow.LoadAllViews();
                 mainWindow.Username.Text = username;
                 mainWindow.Email.Text = email;
+                mainWindow.Wallet.Text = 0 + "€";
                 LoadAllGames lag = new LoadAllGames();
                 lag.LoadGames(email);
                 context.Dispose();
@@ -128,6 +129,7 @@ namespace PrismTest.Views
                         mainWindow.ContentControl.Margin = new Thickness(0, 64, 0, 0);
                         mainWindow.Username.Text = user.Username;
                         mainWindow.Email.Text = user.Email;
+                        mainWindow.Wallet.Text = user.WalletBalance + "€";
                         mainWindow.LoadAllViews();
                         context.Dispose();
                     }

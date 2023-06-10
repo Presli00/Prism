@@ -842,6 +842,7 @@
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             <TextBlock x:Name="errorMessage"
                    HorizontalAlignment="Center"
@@ -893,8 +894,19 @@
                        FontSize="15"
                        Visibility="Hidden"
                        Style="{StaticResource MaterialDesignPasswordBox}"/>
+            <TextBox x:Name="Ballance"
+                     Grid.Row="5"
+                     Grid.ColumnSpan="3"
+                     Width="200"
+                     Height="25"
+                     Margin="10"
+                     VerticalAlignment="Top"
+                     materialDesign:HintAssist.Hint="Money to be added"
+                     FontSize="15"
+                     Style="{StaticResource MaterialDesignTextBox}"
+                     PreviewTextInput="NumberValidation"/>
             <Button Height="20"
-                    Grid.Row="5"
+                    Grid.Row="6"
                     VerticalAlignment="Top"
                     Click="ChangeProfile_OnClick"
                     Style="{DynamicResource MaterialDesignToolButton}"

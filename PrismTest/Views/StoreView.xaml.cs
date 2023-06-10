@@ -4,6 +4,7 @@ using PrismTest.Properties;
 using PrismTest.ViewModels;
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -27,6 +28,7 @@ namespace PrismTest.Views
         public static string FilterGenreName;
         private MainWindow MainWindow = ((MainWindow)Application.Current.MainWindow);
         public CollectionViewSource StoreListCVS;
+        public string alltitles;
 
         public StoreView()
         {
@@ -98,9 +100,10 @@ namespace PrismTest.Views
 
             if (context.Games.Count() != 0)
             {
-                foreach (var item in context.Games)
+                for (int i = 0; i < storeListView.Items.Count; i++)
                 {
-                    ContentPresenter c = (ContentPresenter)storeListView.ItemContainerGenerator.ContainerFromItem(item);
+
+                    ContentPresenter c = (ContentPresenter)storeListView.ItemContainerGenerator.ContainerFromItem(storeListView.Items[i]);
                     try
                     {
                         Button tb = c.ContentTemplate.FindName("GameTitleBtn", c) as Button;
@@ -113,6 +116,20 @@ namespace PrismTest.Views
                     }
                 }
             }
+            else if (storeListView.Items.Count != 0)
+            {
+                for (int i = 0; i < storeListView.Items.Count; i++)
+                {
+                    storeListView.UpdateLayout();
+                    ContentPresenter c = (ContentPresenter)storeListView.ItemContainerGenerator.ContainerFromItem(storeListView.Items[i]);
+                    try
+                    {
+                        Button tb = c.ContentTemplate.FindName("GameTitleBtn", c) as Button;
+                        tb.Foreground = (Brush)converter.ConvertFromString(Settings.Default.gametitles);
+                    }
+                    catch (Exception br) { Trace.WriteLine("Break: " + br); break; }
+                }
+            }
         }
 
         private void GamePage_OnClick(object sender, RoutedEventArgs e)
@@ -120,7 +137,7 @@ namespace PrismTest.Views
             object link = ((Button)sender).Tag;
             string linkString = link.ToString().Trim();
 
-            if (linkString != string.Empty)
+            if (!string.IsNullOrEmpty(linkString) || linkString != "")
             {
                 Process.Start(new ProcessStartInfo(linkString));
             }
@@ -131,9 +148,97 @@ namespace PrismTest.Views
             object link = ((Button)sender).Tag;
             string linkstring = link.ToString().Trim();
 
-            if (linkstring != string.Empty)
+            if (!string.IsNullOrEmpty(linkstring) || linkstring != "")
             {
                 Process.Start(new ProcessStartInfo(linkstring));
+            }
+        }
+
+        private void BuyDirectly_OnClick(object sender, RoutedEventArgs e)
+        {
+            object link = ((Button)sender).Tag;
+            string linkString = link.ToString().Trim();
+
+            if (!string.IsNullOrEmpty(linkString))
+            {
+                var game = context.Games.FirstOrDefault(x => x.Title == linkString);
+                var user = context.Users.FirstOrDefault(x => x.Email == MainWindow.Email.Text);
+                var purchase = context.PurchaseHistory.FirstOrDefault(x => x.Game == game);
+
+                if (purchase != null)
+                {
+                    if (user.WalletBalance >= game.Price)
+                    {
+                        purchase.PurchaseAmount++;
+                        user.WalletBalance = user.WalletBalance - game.Price;
+                        MainWindow.Wallet.Text = user.WalletBalance.ToString();
+                    }
+                    else
+                    {
+                        Trace.WriteLine(DateTime.Now + "Not enough money in the wallet");
+                    }
+                }
+                else
+                {
+                    if (user.WalletBalance >= game.Price)
+                    {
+                        context.Purchase.Add(new PurchaseHistory
+                        {
+                            UserId = user.Id,
+                            User = user,
+                            GameId = game.Id,
+                            Game = game,
+                            PurchaseDate = DateTime.Now,
+                            PurchaseAmount = 1
+                        });
+                        user.WalletBalance = user.WalletBalance - game.Price;
+                        MainWindow.Wallet.Text = user.WalletBalance.ToString();
+                        if (System.IO.File.Exists($"./Resources/{MainWindow.Email.Text}GamesList.txt"))
+                        {
+                            string[] allgames = System.IO.File.ReadAllLines($"./Resources/{MainWindow.Email.Text}GamesList.txt");
+                            string[] columns = new string[0];
+                            int numofgames = 0;
+                            foreach (var item in allgames)
+                            {
+                                columns = allgames[numofgames].Split('|');
+                                string gametitle = columns[0];
+                                gametitle = columns[0];
+                                gametitle = gametitle.Trim().ToLower();
+                                alltitles = alltitles + " | " + gametitle + " | ";
+                                numofgames++;
+                            }
+                            if (!alltitles.Contains(" | " + game.Title.Trim().ToLower() + " | "))
+                            {
+                                try
+                                {
+                                    TextWriter tsw = new StreamWriter($@"./Resources/{MainWindow.Email.Text}GamesList.txt", true);
+                                    Guid gameGuid = Guid.NewGuid();
+                                    tsw.WriteLine(game.Title + "|" +
+                                                  game.Genre + "|" +
+                                                  "" + "|" +
+                                                  game.GamePage + "|" +
+                                                  "" + "|" +
+                                                  game.Poster + "|" +
+                                                  "" + "|" +
+                                                  gameGuid);
+                                    tsw.Close();
+                                }
+                                catch (Exception ex)
+                                {
+                                    Trace.WriteLine(DateTime.Now + ": AddGameOnClick: " + ex.Message);
+                                }
+                                Trace.WriteLine(DateTime.Now + ": Added Game manually: " + game.Title);
+                                ((MainWindow)Application.Current.MainWindow)?.RefreshGames();
+                                //((MainWindow)Application.Current.MainWindow).isDialogOpen = false;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Trace.WriteLine(DateTime.Now + "Not enough money in the wallet");
+                    }
+                }
+                context.SaveChanges();
             }
         }
 

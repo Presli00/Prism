@@ -198,57 +198,86 @@ namespace PrismTest.ViewModels
             }
         }
 
-        public void PopulateDatabase(string email)
+        public void ReadFile(string email)
         {
-            else if (File.Exists($"./Resources/StoreList.txt"))
+            if (context.Purchase.Any(x => x.User.Email == email))
             {
-                string gameFile = $"./Resources/StoreList.txt";
+                string gameFile = $"./Resources/{email}GamesList.txt";
+                var games = context.Purchase.ToList();
                 string[] columns = new string[0];
                 int itemcount = 0;
-                int GameCount = File.ReadLines(gameFile).Count();
-                foreach (var item in File.ReadAllLines(gameFile))
+                int GameCount = games.Count();
+                foreach (var item in games)
                 {
-                    columns = item.Split('|');
+                    var line = File.ReadAllLines(gameFile).FirstOrDefault(x => x.Contains(item.Game.Title));
+                    columns = line.Split('|');
                     if (columns[4] != "")
                     {
                         try
                         {
                             string installDir = AppDomain.CurrentDomain.BaseDirectory;
+                            string iconpath = installDir + "Resources/img/" + columns[4];
+                            icon = new BitmapImage();
+                            icon.BeginInit();
+                            icon.UriSource = new Uri(iconpath);
+                            icon.DecodePixelWidth = 80;
+                            icon.CacheOption = BitmapCacheOption.OnLoad;
+                            icon.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                            icon.EndInit();
+                            icon.Freeze();
+                        }
+                        catch (Exception e) { Trace.WriteLine("Error saving image (Icon): " + e); }
+                    }
+                    if (columns[5] != "")
+                    {
+                        try
+                        {
+                            string installDir = AppDomain.CurrentDomain.BaseDirectory;
                             string posterpath = installDir + "Resources/img/" + columns[5];
-                            BitmapImage image = new BitmapImage();
-                            image.BeginInit();
-                            image.UriSource = new Uri(posterpath);
-                            image.DecodePixelWidth = 200;
-                            image.CacheOption = BitmapCacheOption.OnLoad;
-                            image.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
-                            image.EndInit();
-                            image.Freeze();
-                            Dispatcher.CurrentDispatcher.Invoke(() => storePoster = image);
+                            poster = new BitmapImage();
+                            poster.BeginInit();
+                            poster.UriSource = new Uri(posterpath);
+                            poster.DecodePixelWidth = 200;
+                            poster.CacheOption = BitmapCacheOption.OnLoad;
+                            poster.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                            poster.EndInit();
+                            poster.Freeze();
                         }
                         catch (Exception e) { Trace.WriteLine("Error saving image (Poster): " + e); }
                     }
+                    if (columns[6] != "")
+                    {
+                        try
+                        {
+                            string installDir = AppDomain.CurrentDomain.BaseDirectory;
+                            string columnpath = installDir + "Resources/img/" + columns[6];
+                            banner = new BitmapImage();
+                            banner.BeginInit();
+                            banner.UriSource = new Uri(columnpath);
+                            banner.DecodePixelWidth = 300;
+                            banner.CacheOption = BitmapCacheOption.OnLoad;
+                            banner.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                            banner.EndInit();
+                            banner.Freeze();
+                        }
+                        catch (Exception e) { Trace.WriteLine("Error saving image (Banner): " + e); }
+                    }
                     itemcount++;
-                    storeTitle = columns[0];
-                    storeGenre = columns[1];
-                    gamePage = columns[2];
-                    storeLink = columns[3];
-                    storeGuid = columns[5];
+                    title = item.Game.Title;
+                    genre = item.Game.Genre;
+                    path = columns[2];
+                    link = item.Game.GamePage;
+                    guid = columns[7];
                     double percent = itemcount / GameCount;
                     percentage = Convert.ToInt32(percent);
                     Application.Current.Dispatcher.Invoke(new Action(() =>
-                    AddStoreGameToOC()));
-                    storePoster = null;
+                    AddGameToOC()));
+                    icon = null;
+                    poster = null;
+                    banner = null;
                 }
             }
-        }
-
-        public void ReadFile(string email)
-        {
-            //if (context.Purchase.Any(x => x.User.Email == email))
-            //{
-
-            //}
-            if (File.Exists($"./Resources/{email}GamesList.txt"))
+            else if (File.Exists($"./Resources/{email}GamesList.txt"))
             {
                 string gameFile = $"./Resources/{email}GamesList.txt";
                 string[] columns = new string[0];

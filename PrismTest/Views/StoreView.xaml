@@ -167,6 +167,15 @@
                                                     Tag="{Binding Guid}">
                                                 <StackPanel Orientation="Horizontal">
                                                     <materialDesign:PackIcon VerticalAlignment="Center"
+                                                                             Kind="Web" />
+                                                    <TextBlock Margin="5,0,0,0"
+                                                               Text="Page to buy game" />
+                                                </StackPanel>
+                                            </Button>
+                                            <Button Click="BuyDirectly_OnClick"
+                                                    Tag="{Binding Title}">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <materialDesign:PackIcon VerticalAlignment="Center"
                                                                              Kind="Dollar" />
                                                     <TextBlock Margin="5,0,0,0"
                                                                Text="Buy Game" />

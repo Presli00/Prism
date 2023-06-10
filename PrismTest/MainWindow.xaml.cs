@@ -826,6 +826,7 @@ namespace PrismTest
                 try
                 {
                     GameListMW.Clear();
+                    StoreListMW.Clear();
                 }
                 catch { }
                 lagbw.RunWorkerAsync();

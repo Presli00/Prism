@@ -413,12 +413,19 @@ namespace PrismTest.Views
             }
         }
 
+        private void NumberValidation(object sender, TextCompositionEventArgs e)
+        {
+            Regex regex = new Regex("[^0-9]+");
+            e.Handled = regex.IsMatch(e.Text);
+        }
+
         private void ChangeProfile_OnClick(object sender, RoutedEventArgs e)
         {
             string currentPassword = oldPassword.Password;
             string username = Username.Text;
             string newPass = newPassword.Password;
             string confPass = confNewPassword.Password;
+            string ballance = Ballance.Text;
             bool flag = false;
 
             if (string.IsNullOrEmpty(currentPassword))
@@ -473,6 +480,13 @@ namespace PrismTest.Views
                                 "\n Minimum eight in length";
                         }
                     }
+
+                    if (ballance != "")
+                    {
+                        user.WalletBalance = user.WalletBalance + Convert.ToInt32(ballance);
+                        flag = true;
+                    }
+
 
                     if (flag)
                     {
