@@ -426,6 +426,8 @@ namespace PrismTest.Views
             string newPass = newPassword.Password;
             string confPass = confNewPassword.Password;
             string ballance = Ballance.Text;
+            string encrypted = "";
+            string hex = "";
             bool flag = false;
 
             if (string.IsNullOrEmpty(currentPassword))
@@ -435,72 +437,229 @@ namespace PrismTest.Views
             else
             {
                 var user = this.context.Users.FirstOrDefault(x => x.Email == MainWindow.Email.Text);
-
-                if (encryptor.VerifyPassowrd(currentPassword, user.Password, Convert.FromHexString(user.Salt)))
+                if (user != null)
                 {
-                    if (username != "")
+                    if (encryptor.VerifyPassowrd(currentPassword, user.Password, Convert.FromHexString(user.Salt)))
                     {
-                        if (this.context.Users.Any(x => x.Username == username))
+                        if (!string.IsNullOrEmpty(username))
                         {
-                            errorMessage.Text = "A user with this username already exists";
+                            if (this.context.Users.Any(x => x.Username == username))
+                            {
+                                errorMessage.Text = "A user with this username already exists";
+                            }
+                            else if (Regex.IsMatch(username, @"^(?=.{8,20}$)(?![_.])(?!.*[_.]{2})[a-zA-Z0-9._]+(?<![_.])$"))
+                            {
+                                user.Username = username;
+                                flag = true;
+                            }
+                            else
+                            {
+                                errorMessage.Text = "Please enter a valid username.";
+                            }
                         }
-                        else if (Regex.IsMatch(username, @"^(?=.{8,20}$)(?![_.])(?!.*[_.]{2})[a-zA-Z0-9._]+(?<![_.])$"))
+                        else if (!string.IsNullOrEmpty(newPass))
                         {
-                            user.Username = username;
+                            if (string.IsNullOrEmpty(confPass))
+                            {
+                                errorMessage.Text = "Plese confirm password.";
+                            }
+                            else if (confPass != newPass)
+                            {
+                                errorMessage.Text = "You must enter the same password";
+                            }
+                            else if (Regex.IsMatch(newPass, @"^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$"))
+                            {
+                                encrypted = encryptor.HashPassword(newPass, out var salt);
+                                user.Password = encrypted;
+                                hex = Convert.ToHexString(salt);
+                                user.Salt = hex;
+                                flag = true;
+                            }
+                            else
+                            {
+                                errorMessage.Text = "Plese enter a valid password. Password must contain:" +
+                                    "\n At least one upper case English letter" +
+                                    "\n At least one lower case English letter" +
+                                    "\n At least one digit" +
+                                    "\n At least one special character" +
+                                    "\n Minimum eight in length";
+                            }
+                        }
+
+                        if (!string.IsNullOrEmpty(ballance))
+                        {
+                            var newBallance = user.WalletBalance + Convert.ToDecimal(ballance);
+                            user.WalletBalance = newBallance;
+                            ballance = newBallance.ToString();
                             flag = true;
                         }
-                        else
+
+                        if (flag)
                         {
-                            errorMessage.Text = "Please enter a valid username.";
+                            this.context.SaveChanges();
+                            context.Dispose();
+                            this.UpdateBackup(user, username, encrypted, hex, ballance);
+                            this.Logout();
                         }
                     }
-                    else if (newPass != "")
+                    else
                     {
-                        if (string.IsNullOrEmpty(confPass))
-                        {
-                            errorMessage.Text = "Plese confirm password.";
-                        }
-                        else if (confPass != newPass)
-                        {
-                            errorMessage.Text = "You must enter the same password";
-                        }
-                        else if (Regex.IsMatch(newPass, @"^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$"))
-                        {
-                            user.Password = encryptor.HashPassword(newPass, out var salt);
-                            user.Salt = Convert.ToHexString(salt);
-                            flag = true;
-                        }
-                        else
-                        {
-                            errorMessage.Text = "Plese enter a valid password. Password must contain:" +
-                                "\n At least one upper case English letter" +
-                                "\n At least one lower case English letter" +
-                                "\n At least one digit" +
-                                "\n At least one special character" +
-                                "\n Minimum eight in length";
-                        }
-                    }
-
-                    if (ballance != "")
-                    {
-                        user.WalletBalance = user.WalletBalance + Convert.ToInt32(ballance);
-                        flag = true;
-                    }
-
-
-                    if (flag)
-                    {
-                        this.context.SaveChanges();
-                        context.Dispose();
-                        this.Logout();
+                        errorMessage.Text = "Wrond password!";
                     }
                 }
-                else
+                else if (File.Exists($"./Resources/Users.txt"))
                 {
-                    errorMessage.Text = "Wrond password!";
+                    string userFile = $"./Resources/Users.txt";
+                    string[] columns = new string[0];
+                    string[] arrLines = File.ReadAllLines(userFile);
+                    int lines = 0;
+
+                    foreach (var item in arrLines)
+                    {
+                        if (columns[1] == MainWindow.Email.Text)
+                        {
+                            if (encryptor.VerifyPassowrd(currentPassword, columns[2], Convert.FromHexString(columns[3])))
+                            {
+                                if (!string.IsNullOrEmpty(username))
+                                {
+                                    if (arrLines.Any(x => x.Contains(username)))
+                                    {
+                                        errorMessage.Text = "A user with this username already exists";
+                                    }
+                                    else if (Regex.IsMatch(username, @"^(?=.{8,20}$)(?![_.])(?!.*[_.]{2})[a-zA-Z0-9._]+(?<![_.])$"))
+                                    {
+                                        columns[0] = username;
+                                        flag = true;
+                                    }
+                                    else
+                                    {
+                                        errorMessage.Text = "Please enter a valid username.";
+                                    }
+                                }
+                                else if (!string.IsNullOrEmpty(newPass))
+                                {
+                                    if (string.IsNullOrEmpty(confPass))
+                                    {
+                                        errorMessage.Text = "Plese confirm password.";
+                                    }
+                                    else if (confPass != newPass)
+                                    {
+                                        errorMessage.Text = "You must enter the same password";
+                                    }
+                                    else if (Regex.IsMatch(newPass, @"^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$"))
+                                    {
+                                        columns[2] = encryptor.HashPassword(newPass, out var salt);
+                                        columns[3] = Convert.ToHexString(salt);
+                                        flag = true;
+                                    }
+                                    else
+                                    {
+                                        errorMessage.Text = "Plese enter a valid password. Password must contain:" +
+                                            "\n At least one upper case English letter" +
+                                            "\n At least one lower case English letter" +
+                                            "\n At least one digit" +
+                                            "\n At least one special character" +
+                                            "\n Minimum eight in length";
+                                    }
+                                }
+
+                                if (!string.IsNullOrEmpty(ballance))
+                                {
+                                    decimal newBallance = user.WalletBalance + Convert.ToDecimal(ballance);
+                                    columns[5] = newBallance.ToString();
+                                    flag = true;
+                                }
+
+                                if (flag)
+                                {
+                                    string editLine = columns[0] + "|" +
+                                                        columns[1] + "|" +
+                                                        columns[2] + "|" +
+                                                        columns[3] + "|" +
+                                                        columns[4] + "|" +
+                                                        columns[5] + "|" +
+                                                        columns[6];
+                                    arrLines[lines] = editLine;
+                                    File.WriteAllLines(userFile, arrLines);
+                                }
+                            }
+                            else
+                            {
+                                errorMessage.Text = "Wrond password!";
+                            }
+                        }
+                        else
+                        {
+                            break;
+                        }
+                        lines++;
+                    }
                 }
             }
         }
+
+        private void UpdateBackup(User user, string username = "", string password = "", string salt = "", string ballance = "")
+        {
+            if (File.Exists($"./Resources/Users.txt"))
+            {
+                string userFile = $"./Resources/Users.txt";
+                string[] columns = new string[0];
+                string[] arrLines = File.ReadAllLines(userFile);
+                int lines = 0;
+                foreach (var item in arrLines)
+                {
+                    if (!arrLines.Any(x => x.Contains(MainWindow.Email.Text)))
+                    {
+                        break;
+                    }
+
+                    columns = item.Split('|');
+                    if (columns[1] == MainWindow.Email.Text)
+                    {
+                        if (!string.IsNullOrEmpty(username))
+                        {
+                            columns[0] = username;
+                        }
+                        else
+                        {
+                            columns[0] = user.Username;
+                        }
+
+                        if (!string.IsNullOrEmpty(password))
+                        {
+                            columns[2] = password;
+                            columns[3] = salt;
+                        }
+                        else
+                        {
+                            columns[2] = user.Password;
+                            columns[3] = user.Salt;
+                        }
+
+                        if (!string.IsNullOrEmpty(ballance))
+                        {
+                            columns[5] = ballance.ToString();
+                        }
+                        else
+                        {
+                            columns[5] = user.WalletBalance.ToString();
+                        }
+
+                        string editLine = columns[0] + "|" +
+                            columns[1] + "|" +
+                            columns[2] + "|" +
+                            columns[3] + "|" +
+                            columns[4] + "|" +
+                            columns[5] + "|" +
+                            columns[6];
+                        arrLines[lines] = editLine;
+                        File.WriteAllLines(userFile, arrLines);
+                    }
+                    lines++;
+                }
+            }
+        }
+
         private void Logout()
         {
             MainWindow.DataContext = loginRegisterViewModel;

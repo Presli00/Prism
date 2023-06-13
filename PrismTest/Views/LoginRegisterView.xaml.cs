@@ -7,6 +7,9 @@ using PrismTest.Models.DataModels;
 using PrismTest.ViewModels;
 using PrismTest.Helpers;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
+using System.IO;
+using System.Windows.Media.Imaging;
 
 namespace PrismTest.Views
 {
@@ -19,6 +22,7 @@ namespace PrismTest.Views
         private readonly ModelContext context = new ModelContext();
         private MainWindow mainWindow = ((MainWindow)Application.Current.MainWindow);
         private PasswordsEncryption encryptor = new PasswordsEncryption();
+        public string allusernames;
 
         public LoginRegisterView()
         {
@@ -81,18 +85,21 @@ namespace PrismTest.Views
             }
             else
             {
+                var encrypted = encryptor.HashPassword(password, out var salt);
+                var hex = Convert.ToHexString(salt);
                 this.context.Users.Add(new User
                 {
                     Username = username,
-                    Password = encryptor.HashPassword(password, out var salt),
+                    Password = encrypted,
                     Email = email,
-                    Salt = Convert.ToHexString(salt),
+                    Salt = hex,
                     Region = region,
                     WalletBalance = 0,
                     Purchases = null
                 });
 
                 this.context.SaveChanges();
+                this.BackupUser(username, email, encrypted, hex, region, 0);
 
                 mainWindow.AddGameButton.Visibility = Visibility.Visible;
                 mainWindow.Menu.Visibility = Visibility.Visible;
@@ -104,6 +111,66 @@ namespace PrismTest.Views
                 LoadAllGames lag = new LoadAllGames();
                 lag.LoadGames(email);
                 context.Dispose();
+            }
+        }
+
+        private void BackupUser(string username, string email, string password, string salt, string region, int ballance)
+        {
+            if (System.IO.File.Exists($"./Resources/Users.txt"))
+            {
+                string[] allusers = System.IO.File.ReadAllLines($"./Resources/Users.txt");
+                string[] columns = new string[0];
+                int numofusers = 0;
+                foreach (var item in allusers)
+                {
+                    columns = allusers[numofusers].Split('|');
+                    string user = columns[0];
+                    user = columns[0];
+                    user = user.Trim().ToLower();
+                    allusernames = allusernames + " | " + user + " | ";
+                    numofusers++;
+                }
+                if (!allusernames.Contains(" | " + username.Trim().ToLower() + " | "))
+                {
+                    try
+                    {
+                        TextWriter tsw = new StreamWriter($@"./Resources/Users.txt", true);
+                        Guid userGuid = Guid.NewGuid();
+                        tsw.WriteLine(username + "|" +
+                                          email + "|" +
+                                          password + "|" +
+                                          salt + "|" +
+                                          region + "|" +
+                                          ballance + "|" +
+                                      userGuid);
+                        tsw.Close();
+                    }
+                    catch (Exception ex)
+                    {
+                        Trace.WriteLine(DateTime.Now + ": user backed up: " + ex.Message);
+                    }
+                    Trace.WriteLine(DateTime.Now + ": Added Game automatically: " + username);
+                }
+            }
+            else
+            {
+                try
+                {
+                    TextWriter tsw = new StreamWriter($@"./Resources/Users.txt", true);
+                    Guid userGuid = Guid.NewGuid();
+                    tsw.WriteLine(username + "|" +
+                                          email + "|" +
+                                          password + "|" +
+                                          salt + "|" +
+                                          region + "|" +
+                                          ballance + "|" +
+                                      userGuid);
+                    tsw.Close();
+                }
+                catch (Exception ex)
+                {
+                    Trace.WriteLine(DateTime.Now + ": user backed up2: " + ex.Message);
+                }
             }
         }
 
@@ -132,6 +199,32 @@ namespace PrismTest.Views
                         mainWindow.Wallet.Text = user.WalletBalance + "€";
                         mainWindow.LoadAllViews();
                         context.Dispose();
+                    }
+                }
+                else if (File.Exists($"./Resources/Users.txt"))
+                {
+                    string userFile = $"./Resources/Users.txt";
+                    string[] columns = new string[0];
+                    foreach (var item in File.ReadAllLines(userFile))
+                    {
+                        columns = item.Split('|');
+                        if (columns[1] == email)
+                        {
+                            if (!encryptor.VerifyPassowrd(password, user.Password, Convert.FromHexString(user.Salt)))
+                            {
+                                errorMessage.Text = "The password is wrong.";
+                            }
+                            else
+                            {
+                                mainWindow.AddGameButton.Visibility = Visibility.Visible;
+                                mainWindow.Menu.Visibility = Visibility.Visible;
+                                mainWindow.ContentControl.Margin = new Thickness(0, 64, 0, 0);
+                                mainWindow.Username.Text = columns[0];
+                                mainWindow.Email.Text = columns[1];
+                                mainWindow.Wallet.Text = columns[5] + "€";
+                                mainWindow.LoadAllViews();
+                            }
+                        }
                     }
                 }
                 else
