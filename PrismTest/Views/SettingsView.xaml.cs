@@ -360,12 +360,12 @@ namespace PrismTest.Views
                     }
                 }
             }
-            if (!File.Exists("./Resources/GamesList.txt"))
+            if (!File.Exists(@$"./Resources/{MainWindow.Email.Text}GamesList.txt"))
             {
             }
             else
             {
-                var gametext = File.ReadAllLines("./Resources/GamesList.txt", Encoding.UTF8);
+                var gametext = File.ReadAllLines(@$"./Resources/{MainWindow.Email.Text}GamesList.txt", Encoding.UTF8);
                 for (int i2 = 0; i2 < gametext.Length; i2++)
                 {
                     if (gametext[i2].Contains(DeletedGenre))
@@ -379,7 +379,7 @@ namespace PrismTest.Views
                             string newGenre = genretoedit.Trim();
                             string NewGameInfo = column[0] + "|" + newGenre + "|" + column[2] + "|" + column[3] + "|" + column[4] + "|" + column[5] + "|" + column[6] + "|" + Guid.NewGuid();
                             ModifyFile.RemoveGameFromFile(gametoeditguid);
-                            TextWriter tw = new StreamWriter(@"./Resources/GamesList.txt", true);
+                            TextWriter tw = new StreamWriter(@$"./Resources/{MainWindow.Email.Text}GamesList.txt", true);
                             tw.WriteLine(NewGameInfo);
                             tw.Close();
                         }

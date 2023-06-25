@@ -16,7 +16,7 @@ namespace PrismTest.ViewModels
             gameGuid = gameGuid.ToString();
             string[] columns = new string[0];
             string[] columns2 = new string[0];
-            var text = File.ReadAllLines("./Resources/GamesList.txt", Encoding.UTF8);
+            var text = File.ReadAllLines($"./Resources/{MainWindow.Email.Text}GamesList.txt", Encoding.UTF8);
             for (int i = 0; i < text.Length; i++)
             {
                 if (text[i].Contains($"{gameGuid}"))
@@ -36,10 +36,10 @@ namespace PrismTest.ViewModels
                             DeleteGameImages(title);
                         text[i] = "";
                         text = text.Where(x => !string.IsNullOrEmpty(x)).ToArray();
-                        File.WriteAllLines("./Resources/GamesList.txt", text);
-                        if (new FileInfo("./Resources/GamesList.txt").Length == 0)
+                        File.WriteAllLines($"./Resources/{MainWindow.Email.Text}GamesList.txt", text);
+                        if (new FileInfo($"./Resources/{MainWindow.Email.Text}GamesList.txt").Length == 0)
                         {
-                            File.Delete("./Resources/GamesList.txt");
+                            File.Delete($"./Resources/{MainWindow.Email.Text}GamesList.txt");
                         }
                     }
                     catch (Exception e)
@@ -53,7 +53,7 @@ namespace PrismTest.ViewModels
         public static void EditGameInfile(object gameGuid)
         {
             gameGuid = gameGuid.ToString();
-            var text = File.ReadAllLines("./Resources/GamesList.txt", Encoding.UTF8);
+            var text = File.ReadAllLines($"./Resources/{MainWindow.Email.Text}GamesList.txt", Encoding.UTF8);
             for (int i = 0; i < text.Length; i++)
             {
                 if (text[i].Contains($"{gameGuid}"))

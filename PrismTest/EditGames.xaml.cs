@@ -22,6 +22,7 @@ namespace PrismTest
         public string alltitles;
         public int offset;
         public string installPath = AppDomain.CurrentDomain.BaseDirectory;
+        private MainWindow MainWindow = ((MainWindow)Application.Current.MainWindow);
 
         public EditGames()
         {
@@ -51,9 +52,9 @@ namespace PrismTest
                 Uri uri = uriBuilder.Uri;
                 EditLink.Text = uri.ToString();
             }
-            if (System.IO.File.Exists("./Resources/GamesList.txt"))
+            if (System.IO.File.Exists($"./Resources/{MainWindow.Email.Text}GamesList.txt"))
             {
-                string[] allgames = System.IO.File.ReadAllLines("./Resources/GamesList.txt");
+                string[] allgames = System.IO.File.ReadAllLines($"./Resources/{MainWindow.Email.Text}GamesList.txt");
                 string[] columns = new string[0];
                 int numofgames = 0;
                 foreach (var item in allgames)
@@ -72,7 +73,7 @@ namespace PrismTest
                         RenameFiles(OldTitle, NewTitle);
                         try
                         {
-                            TextWriter tsw = new StreamWriter(@"./Resources/GamesList.txt", true);
+                            TextWriter tsw = new StreamWriter(@$"./Resources/{MainWindow.Email.Text}GamesList.txt", true);
                             tsw.WriteLine(EditTitle.Text + "|" +
                                           EditGenre.Text + "|" +
                                           EditPath.Text + "|" +
@@ -100,7 +101,7 @@ namespace PrismTest
                     {
                         try
                         {
-                            TextWriter tsw = new StreamWriter(@"./Resources/GamesList.txt", true);
+                            TextWriter tsw = new StreamWriter(@$"./Resources/{MainWindow.Email.Text}GamesList.txt", true);
                             tsw.WriteLine(EditTitle.Text + "|" +
                                           EditGenre.Text + "|" +
                                           EditPath.Text + "|" +

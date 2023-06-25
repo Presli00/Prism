@@ -711,6 +711,7 @@ namespace PrismTest
             view = "poster";
             DataContext = posterViewModel;
             Settings.Default.viewtype = "Poster";
+            AddGameButton.Visibility = Visibility.Visible;
             Settings.Default.Save();
         }
         public void BannerViewActive()
@@ -718,6 +719,7 @@ namespace PrismTest
             view = "banner";
             DataContext = bannerViewModel;
             Settings.Default.viewtype = "Banner";
+            AddGameButton.Visibility = Visibility.Visible;
             Settings.Default.Save();
         }
         public void ListViewActive()
@@ -725,6 +727,7 @@ namespace PrismTest
             view = "list";
             DataContext = listViewModel;
             Settings.Default.viewtype = "List";
+            AddGameButton.Visibility = Visibility.Visible;
             Settings.Default.Save();
         }
         public void SettingsViewActive()
@@ -732,6 +735,7 @@ namespace PrismTest
             view = "settings";
             settingsViewModel = new SettingsViewModel();
             settingsViewModel.LoadGenres();
+            AddGameButton.Visibility = Visibility.Hidden;
             DataContext = settingsViewModel;
         }
         public void StoreViewActive()
@@ -739,6 +743,7 @@ namespace PrismTest
             view = "store";
             DataContext = storeViewModel;
             Settings.Default.viewtype = "Store";
+            AddGameButton.Visibility = Visibility.Hidden;
             Settings.Default.Save();
         }
         public void IncreaseExeSearch()
