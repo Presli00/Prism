@@ -439,7 +439,7 @@ namespace PrismTest.Views
                 var user = this.context.Users.FirstOrDefault(x => x.Email == MainWindow.Email.Text);
                 if (user != null)
                 {
-                    if (encryptor.VerifyPassowrd(currentPassword, user.Password, Convert.FromHexString(user.Salt)))
+                    if (encryptor.VerifyPassword(currentPassword, user.Password, Convert.FromHexString(user.Salt)))
                     {
                         if (!string.IsNullOrEmpty(username))
                         {
@@ -518,7 +518,7 @@ namespace PrismTest.Views
                     {
                         if (columns[1] == MainWindow.Email.Text)
                         {
-                            if (encryptor.VerifyPassowrd(currentPassword, columns[2], Convert.FromHexString(columns[3])))
+                            if (encryptor.VerifyPassword(currentPassword, columns[2], Convert.FromHexString(columns[3])))
                             {
                                 if (!string.IsNullOrEmpty(username))
                                 {
