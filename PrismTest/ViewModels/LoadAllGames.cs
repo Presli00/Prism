@@ -78,7 +78,7 @@ namespace PrismTest.ViewModels
                 Games.Clear();
             }
             catch { }
-            ReadFile(email);
+            LoadLibrary(email);
             Games = games;
             Application.Current.Dispatcher.Invoke(new Action(() =>
             ((MainWindow)Application.Current.MainWindow).RefreshDataContext()));
@@ -198,7 +198,7 @@ namespace PrismTest.ViewModels
             }
         }
 
-        public void ReadFile(string email)
+        public void LoadLibrary(string email)
         {
             if (context.Purchase.Any(x => x.User.Email == email))
             {
