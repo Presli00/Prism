@@ -185,7 +185,7 @@ namespace PrismTest.Views
 
                 if (user != null)
                 {
-                    if (!encryptor.VerifyPassowrd(password, user.Password, Convert.FromHexString(user.Salt)))
+                    if (!encryptor.VerifyPassword(password, user.Password, Convert.FromHexString(user.Salt)))
                     {
                         errorMessage.Text = "The password is wrong.";
                     }
@@ -210,7 +210,7 @@ namespace PrismTest.Views
                         columns = item.Split('|');
                         if (columns[1] == email)
                         {
-                            if (!encryptor.VerifyPassowrd(password, user.Password, Convert.FromHexString(user.Salt)))
+                            if (!encryptor.VerifyPassword(password, user.Password, Convert.FromHexString(user.Salt)))
                             {
                                 errorMessage.Text = "The password is wrong.";
                             }

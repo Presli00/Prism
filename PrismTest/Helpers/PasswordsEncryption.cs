@@ -26,7 +26,7 @@ namespace PrismTest.Helpers
             return Convert.ToHexString(hash);
         }
 
-        public bool VerifyPassowrd(string password, string hash, byte[] salt)
+        public bool VerifyPassword(string password, string hash, byte[] salt)
         {
             var hashToCompare = Rfc2898DeriveBytes.Pbkdf2(Encoding.UTF8.GetBytes(password), salt, iterations, hashAlgorithm, keySize);
 
